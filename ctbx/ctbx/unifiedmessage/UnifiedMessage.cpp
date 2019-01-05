@@ -13,18 +13,17 @@ namespace ctbx::message {
 		int64_t from_group_id = cqgmsg.group_id;
 		int64_t from_user_id = cqgmsg.user_id;
 		cq::Message msg_list(cqgmsg.message);
-		for (auto it = msg_list.begin(); it != msg_list.end(); it++) {
-			if (it->type == "at") {
-				int64_t reply_qq = std::stoll(it->data.at("qq"));
-				_segs.emplace_back(
-					new UReply({
-						types::GROUP_TYPE::QQ,
-						reply_qq,
-						Cards::get_card(from_group_id, reply_qq)
-						}));
-				msg_list.erase(it);
-				break;
-			}
+		auto first_msg = msg_list.front()
+		if (first_msg.type == "at" && first_msg.data.at("qq") != "all") {
+			int64_t reply_qq = std::stoll(first_msg.data.at("qq"));
+			_segs.emplace_back(
+				new UReply({
+					types::SOFTWARE_TYPE::QQ,
+					reply_qq,
+					Cards::get_card(from_group_id, reply_qq)
+					}));
+			msg_list.erase(it);
+			break;
 		}
 		_image_only = true;
 		for (auto&it : msg_list)
@@ -49,10 +48,14 @@ namespace ctbx::message {
 		}
 		std::string plain_text = "";
 		for (auto it = msg_list.begin(); it != msg_list.end();) {
-			if (it->type == "qq") {
+			if (it->type == "at" && it->data.at("qq") != "all") {
 				plain_text += "@";
 				plain_text += Cards::get_card(from_group_id, std::stoll(it->data.at("qq")));
 				it = msg_list.erase(it);
+			}
+			else if (it->type == "at" && it->data.at("qq") == "all") {
+				plain_text += "@全体成员";
+				it = msg_list.erase(it)
 			}
 			else if (it->type == "text") {
 				plain_text += it->data.at("text");
