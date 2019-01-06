@@ -3,7 +3,7 @@
 namespace ctbx::logging {
 	static std::shared_ptr<spdlog::logger> logger(static_cast<spdlog::logger*>(0));
 	void logger_initialize(const std::string& app_dir, int hour, int minute) {
-		logger = spdlog::daily_logger_mt(logger_name, app_dir, hour, minute);
+		logger = spdlog::basic_logger_mt(logger_name, app_dir, hour, minute);
 		logger->set_pattern("[%Y-%m-%d %H:%M:%S] [%l] %v");
 		logger->flush_on(spdlog::level::level_enum::trace);
 		logger->set_level(spdlog::level::level_enum::debug);
