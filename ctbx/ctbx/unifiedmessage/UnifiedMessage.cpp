@@ -13,16 +13,15 @@ namespace ctbx::message {
 		int64_t from_group_id = cqgmsg.group_id;
 		int64_t from_user_id = cqgmsg.user_id;
 		cq::Message msg_list(cqgmsg.message);
-		auto first_msg = msg_list.front()
-		if (first_msg.type == "at" && first_msg.data.at("qq") != "all") {
+		auto first_msg = msg_list.front();
+		if (first_msg.type == "at" && first_msg.data.at("qq") != "all")
+		{
 			int64_t reply_qq = std::stoll(first_msg.data.at("qq"));
 			_segs.emplace_back(
-				new UReply({
-					types::SOFTWARE_TYPE::QQ,
-					reply_qq,
-					Cards::get_card(from_group_id, reply_qq)
-					}));
-			msg_list.erase(it);
+				new UReply({types::GROUP_TYPE::QQ,
+							reply_qq,
+							Cards::get_card(from_group_id, reply_qq)}));
+			msg_list.pop_front();
 			break;
 		}
 		_image_only = true;
@@ -55,7 +54,7 @@ namespace ctbx::message {
 			}
 			else if (it->type == "at" && it->data.at("qq") == "all") {
 				plain_text += "@全体成员";
-				it = msg_list.erase(it)
+				it = msg_list.erase(it);
 			}
 			else if (it->type == "text") {
 				plain_text += it->data.at("text");
